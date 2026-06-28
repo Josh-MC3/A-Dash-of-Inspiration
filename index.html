@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Every Hero Has an Origin Story</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0B0E1A;
+    --navy-soft: #11142480;
+    --gold: #E8B968;
+    --cream: #F2EEE3;
+    --rose: #D88C7A;
+    --sage: #7C9885;
+    --line: rgba(242, 238, 227, 0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--navy);
+    color: var(--cream);
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+    line-height: 1.6;
+  }
+
+  h1, h2, h3 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
+
+  .eyebrow {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 1.25rem;
+  }
+
+  /* ---------- Progress thread (signature element) ---------- */
+  .thread-track {
+    position: fixed;
+    left: 28px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--line);
+    z-index: 50;
+    display: none;
+  }
+  .thread-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 0%;
+    background: linear-gradient(180deg, var(--gold), var(--rose));
+    transition: height 0.1s linear;
+  }
+  @media (min-width: 900px) {
+    .thread-track { display: block; }
+  }
+
+  /* ---------- Layout helpers ---------- */
+  .scene {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 6rem 6vw;
+    overflow: hidden;
+  }
+  @media (max-width: 700px) {
+    .scene { padding: 4.5rem 6vw; min-height: auto; }
+  }
+
+  .scene-inner {
+    max-width: 1180px;
+    margin: 0 auto;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4.5rem;
+    align-items: center;
+  }
+  @media (max-width: 900px) {
+    .scene-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+  }
+  .scene-inner.reverse .img-col { order: 2; }
+  @media (max-width: 900px) {
+    .scene-inner.reverse .img-col { order: 0; }
+  }
+
+  .img-col img, .img-col .img-placeholder {
+    width: 100%;
+    aspect-ratio: 4/5;
+    object-fit: cover;
+    border-radius: 18px;
+    display: block;
+  }
+
+  .img-placeholder {
+    background: linear-gradient(160deg, #1A1F33, #0B0E1A);
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(242,238,227,0.35);
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    text-align: center;
+    padding: 2rem;
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.9s cubic-bezier(.2,.7,.2,1), transform 0.9s cubic-bezier(.2,.7,.2,1);
+  }
+  .reveal.in-view { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1.in-view { transition-delay: 0.12s; }
+  .reveal-delay-2.in-view { transition-delay: 0.24s; }
+
+  p.lede {
+    font-size: 1.1rem;
+    color: rgba(242,238,227,0.85);
+    max-width: 46ch;
+  }
+  p.lede + p.lede { margin-top: 1rem; }
+
+  .closer {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 1.3rem;
+    color: var(--gold);
+    margin-top: 1.75rem;
+    max-width: 38ch;
+  }
+
+  .glow-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: var(--gold);
+    color: #1A1306;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 1rem 2.1rem;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: 0 0 0 0 rgba(232,185,104,0.6);
+    transition: box-shadow 0.4s ease, transform 0.2s ease;
+  }
+  .glow-btn:hover {
+    box-shadow: 0 0 38px 6px rgba(232,185,104,0.55);
+    transform: translateY(-2px);
+  }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    padding: 0 6vw;
+    background: radial-gradient(ellipse at 50% 30%, #1B1F36 0%, #0B0E1A 65%);
+  }
+
+  .particles {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .particle {
+    position: absolute;
+    width: 4px; height: 4px;
+    background: var(--gold);
+    border-radius: 50%;
+    opacity: 0.5;
+    animation: drift 14s linear infinite;
+  }
+  @keyframes drift {
+    0% { transform: translateY(0) translateX(0); opacity: 0; }
+    10% { opacity: 0.6; }
+    90% { opacity: 0.6; }
+    100% { transform: translateY(-110vh) translateX(20px); opacity: 0; }
+  }
+
+  .hero h1 {
+    font-size: clamp(2.6rem, 7vw, 5.2rem);
+    max-width: 16ch;
+    z-index: 2;
+  }
+  .hero .sub {
+    margin-top: 1.6rem;
+    font-size: clamp(1rem, 1.6vw, 1.25rem);
+    color: rgba(242,238,227,0.75);
+    max-width: 38ch;
+    z-index: 2;
+  }
+  .hero .glow-btn { margin-top: 2.6rem; z-index: 2; }
+
+  .scroll-cue {
+    position: absolute;
+    bottom: 2.5rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(242,238,227,0.4);
+    animation: bob 2.2s ease-in-out infinite;
+  }
+  @keyframes bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(8px); }
+  }
+
+  /* ---------- Section-specific tints ---------- */
+  #rockbottom { background: linear-gradient(180deg, #0B0E1A, #15131C); }
+  #study { background: #0B0E1A; }
+  #training { background: linear-gradient(180deg, #15131C, #1A140F); }
+  #graduation { background: #0B0E1A; }
+  #stars {
+    background: radial-gradient(ellipse at 50% 40%, #161A30 0%, #0B0E1A 70%);
+  }
+  .star-field {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .star-dot {
+    position: absolute;
+    width: 2px; height: 2px;
+    background: var(--cream);
+    border-radius: 50%;
+    animation: twinkle 3.5s ease-in-out infinite;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.15; }
+    50% { opacity: 0.9; }
+  }
+  #path {
+    background: linear-gradient(180deg, #0E0D18, #14101C);
+  }
+  #peace { background: linear-gradient(180deg, #0E1812, #0B0E1A); }
+
+  /* Section 5: two-voices split visual */
+  .voices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    margin: 2rem 0;
+  }
+  .voice {
+    padding: 1.8rem 1.1rem;
+    text-align: center;
+    position: relative;
+  }
+  @media (max-width: 500px) {
+    .voices { grid-template-columns: 1fr; }
+  }
+  .voice.cautious {
+    background: linear-gradient(160deg, #15192B, #0B0E1A);
+    color: rgba(242,238,227,0.6);
+  }
+  .voice.bold {
+    background: linear-gradient(160deg, #2A2110, #1A1408);
+    color: var(--cream);
+  }
+  .voice .quote {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 1.05rem;
+    margin-bottom: 0.5rem;
+  }
+  .voice .tag {
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+  .voice.bold .tag { color: var(--gold); }
+
+  /* ---------- Final CTA ---------- */
+  .finale {
+    min-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 6rem 6vw;
+    background: radial-gradient(ellipse at 50% 60%, #1E2238 0%, #0B0E1A 70%);
+  }
+  .finale h2 {
+    font-size: clamp(2.2rem, 6vw, 3.8rem);
+    max-width: 20ch;
+  }
+  .finale .glow-btn { margin-top: 2.4rem; font-size: 1.05rem; padding: 1.1rem 2.4rem; }
+  .finale .fine {
+    margin-top: 1.8rem;
+    max-width: 36ch;
+    font-size: 0.95rem;
+    color: rgba(242,238,227,0.6);
+  }
+
+  footer {
+    text-align: center;
+    padding: 2.5rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    color: rgba(242,238,227,0.35);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .particle { animation: none; opacity: 0.3; }
+    .star-dot { animation: none; opacity: 0.5; }
+    .reveal { transition: none; opacity: 1; transform: none; }
+    .scroll-cue { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="thread-track"><div class="thread-fill" id="threadFill"></div></div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="particles" id="particles"></div>
+  <h1 class="reveal in-view">Every Hero Has an Origin Story.</h1>
+  <p class="sub reveal in-view reveal-delay-1">Some are born into greatness. Others simply decide today will be different.</p>
+  <a href="#rockbottom" class="glow-btn reveal in-view reveal-delay-2">Begin the Journey</a>
+  <div class="scroll-cue">Scroll</div>
+</section>
+
+<!-- SECTION 1: ROCK BOTTOM -->
+<section class="scene" id="rockbottom">
+  <div class="scene-inner">
+    <div class="img-col reveal">
+      <img loading="lazy" src="photo_1.jpeg" alt="placeholder: woman looking stressed at laptop, job search">
+    </div>
+    <div class="text-col reveal reveal-delay-1">
+      <span class="eyebrow">Chapter One</span>
+      <h2>Rock Bottom</h2>
+      <p class="lede">Her life has completely stalled. No job, no clear direction, no signal in the void of online applications. Even her houseplants are starting to lose confidence in her.</p>
+      <p class="lede">But she isn't defeated. She's simply waiting for the next chapter — even if she doesn't know it yet.</p>
+      <p class="closer">Sometimes life removes the road beneath your feet so you'll finally build your own.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 2: STUDY -->
+<section class="scene" id="study">
+  <div class="scene-inner reverse">
+    <div class="img-col reveal">
+      <img loading="lazy" src="photo_2.jpeg" alt="placeholder: woman studying surrounded by books in a library">
+    </div>
+    <div class="text-col reveal reveal-delay-1">
+      <span class="eyebrow">Chapter Two</span>
+      <h2>Knowledge Changes Everything</h2>
+      <p class="lede">Every great adventure starts with learning. The books pile higher. Coffee consumption reaches dangerous levels. Sticky notes colonize every flat surface in the apartment.</p>
+      <p class="lede">Somewhere between chapter twelve and her fourth highlighter, greatness quietly showed up.</p>
+      <p class="closer">As long as you study hard, you can achieve anything you set your mind to.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 3: TRAINING -->
+<section class="scene" id="training">
+  <div class="scene-inner">
+    <div class="img-col reveal">
+      <img loading="lazy" src="photo_3.jpeg" alt="placeholder: woman running, training montage">
+    </div>
+    <div class="text-col reveal reveal-delay-1">
+      <span class="eyebrow">Chapter Three</span>
+      <h2>Strength Isn't Just Physical</h2>
+      <p class="lede">Becoming a teacher takes endurance: early mornings, patience, resilience, energy, and an unreasonably good sense of humor. So she trains like it's a championship fight — dramatic music included, slow motion optional but encouraged.</p>
+      <p class="lede">You don't conquer classrooms. You conquer yourself first.</p>
+      <p class="closer">Training your body is just as important as training your mind.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 4: GRADUATION -->
+<section class="scene" id="graduation">
+  <div class="scene-inner reverse">
+    <div class="img-col reveal">
+      <img loading="lazy" src="photo_4.jpeg" alt="placeholder: graduates tossing caps in celebration">
+    </div>
+    <div class="text-col reveal reveal-delay-1">
+      <span class="eyebrow">Chapter Four</span>
+      <h2>Success Has Momentum</h2>
+      <p class="lede">Graduation feels like winning the Olympics. Confetti everywhere. Triumphant music. Parents crying. Professors suddenly remembering they always knew she'd make it.</p>
+      <p class="lede">When you succeed once, you discover you're capable of succeeding again.</p>
+      <p class="closer">The world is your stage.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 5: ANYONE CAN BECOME A STAR -->
+<section class="scene" id="stars">
+  <div class="star-field" id="starField"></div>
+  <div class="scene-inner reverse">
+    <div class="img-col reveal">
+      <img loading="lazy" src="photo_5.jpeg" alt="placeholder: silhouette of a person standing beneath a starry night sky">
+    </div>
+    <div class="text-col reveal reveal-delay-1">
+      <span class="eyebrow">Chapter Five</span>
+      <h2>Somewhere, a Star Is Waiting</h2>
+      <p class="lede">Her story isn't rare. It isn't reserved for the chosen few who already had it figured out. Every person standing under this same sky carries the same raw material she started with — uncertainty, a few bad days, and a stubborn spark that refused to go out.</p>
+      <p class="lede">She didn't become extraordinary by being born that way. She became extraordinary by deciding to start.</p>
+      <p class="closer">Look up. Every star you see was once just a point of light no brighter than yours — and every single one of us has the capability to become one.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 6: TWO VOICES -->
+<section class="scene" id="path">
+  <div class="scene-inner">
+    <div class="img-col reveal">
+      <img loading="lazy" src="photo_5.jpeg" alt="placeholder: woman smiling confidently, dressed casually, no costume">
+    </div>
+    <div class="text-col reveal reveal-delay-1">
+      <span class="eyebrow">Chapter Six</span>
+      <h2>The World Always Needs Heroes</h2>
+      <p class="lede">Every person carries two voices inside them. Right before the biggest leap of her life, she hears both, loud and clear.</p>
+      <div class="voices">
+        <div class="voice cautious">
+          <div class="quote">"I'm not ready."</div>
+          <div class="tag">The voice of caution</div>
+        </div>
+        <div class="voice bold">
+          <div class="quote">"Let's see what happens."</div>
+          <div class="tag">The voice of courage</div>
+        </div>
+      </div>
+      <p class="closer">Sometimes we don't wait for heroes. Sometimes we become them. Every classroom deserves someone brave enough to believe in tomorrow.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 7: PEACE -->
+<section class="scene" id="peace">
+  <div class="scene-inner">
+    <div class="img-col reveal">
+      <img loading="lazy" src="photo_7.jpeg" alt="placeholder: woman meditating peacefully in the mountains">
+    </div>
+    <div class="text-col reveal reveal-delay-1">
+      <span class="eyebrow">Chapter Seven</span>
+      <h2>Peace Is Meant To Be Shared</h2>
+      <p class="lede">All the struggle, the studying, the failures and small victories led somewhere she didn't expect: quiet confidence. A sense of purpose that doesn't need to prove itself anymore.</p>
+      <p class="lede">Now she smiles, because she knows exactly how she can help someone else find their own way.</p>
+      <p class="closer">One day you'll find your own peace. And then you'll spend the rest of your life helping others find theirs.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FINALE -->
+<section class="finale">
+  <span class="eyebrow reveal in-view">The Final Act</span>
+  <h2 class="reveal in-view reveal-delay-1">Someone Changed Your Life Once.<br>Now It's Your Turn.</h2>
+  <a href="#" class="glow-btn reveal in-view reveal-delay-2">Become Extraordinary</a>
+  <p class="fine reveal in-view reveal-delay-2">Becoming a teacher isn't about having all the answers. It's about helping someone else discover theirs.</p>
+</section>
+
+<footer>A fictional, tongue-in-cheek origin story celebrating real teachers everywhere.</footer>
+
+<script>
+  // Scroll-triggered reveal
+  const revealEls = document.querySelectorAll('.reveal:not(.in-view)');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('in-view');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.18 });
+  revealEls.forEach(el => io.observe(el));
+
+  // Progress thread
+  const threadFill = document.getElementById('threadFill');
+  function updateThread() {
+    const scrolled = window.scrollY;
+    const max = document.body.scrollHeight - window.innerHeight;
+    const pct = max > 0 ? (scrolled / max) * 100 : 0;
+    threadFill.style.height = pct + '%';
+  }
+  window.addEventListener('scroll', updateThread, { passive: true });
+  updateThread();
+
+  // Hero particles
+  const particleContainer = document.getElementById('particles');
+  const PARTICLE_COUNT = 28;
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.bottom = (Math.random() * 20) + '%';
+    p.style.animationDuration = (10 + Math.random() * 10) + 's';
+    p.style.animationDelay = (Math.random() * 10) + 's';
+    particleContainer.appendChild(p);
+  }
+
+  // Section 7 twinkling star field
+  const starField = document.getElementById('starField');
+  const STAR_COUNT = 60;
+  for (let i = 0; i < STAR_COUNT; i++) {
+    const s = document.createElement('div');
+    s.className = 'star-dot';
+    s.style.left = Math.random() * 100 + '%';
+    s.style.top = Math.random() * 100 + '%';
+    s.style.animationDuration = (2.5 + Math.random() * 3) + 's';
+    s.style.animationDelay = (Math.random() * 4) + 's';
+    starField.appendChild(s);
+  }
+</script>
+
+</body>
+</html>
